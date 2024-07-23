@@ -1,22 +1,22 @@
-import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  signInStart,
-  signInSuccess,
-  signInFailure,
-} from '../redux/user/userSlice';
-import OAuth from '../components/OAuth';
+import { Link, useNavigate } from 'react-router-dom';
+import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from '../firebase'; // Ensure this path is correct
 
-export default function SignIn() {
+
+const SignIn = () => {
   const [formData, setFormData] = useState({});
   const { loading, error: errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
@@ -42,6 +42,19 @@ export default function SignIn() {
       dispatch(signInFailure(error.message));
     }
   };
+
+  const handleGoogleSignIn = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // Handle result
+        console.log(result.user);
+      })
+      .catch((error) => {
+        console.error("Error signing in with Google: ", error);
+      });
+  };
+
   return (
     <div className='min-h-screen mt-20'>
       <div className='flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5'>
@@ -49,17 +62,16 @@ export default function SignIn() {
         <div className='flex-1'>
           <Link to='/' className='font-bold dark:text-white text-4xl'>
             <span className='px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white'>
-              Sahand's
+              Abhi's
             </span>
             Blog
           </Link>
           <p className='text-sm mt-5'>
-            This is a demo project. You can sign in with your email and password
+           You can sign in with your email and password
             or with Google.
           </p>
         </div>
         {/* right */}
-
         <div className='flex-1'>
           <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
             <div>
@@ -94,10 +106,16 @@ export default function SignIn() {
                 'Sign In'
               )}
             </Button>
-            <OAuth />
+            <Button
+              gradientDuoTone='purpleToPink'
+              type='button'
+              onClick={handleGoogleSignIn}
+            >
+              Sign in with Google
+            </Button>
           </form>
           <div className='flex gap-2 text-sm mt-5'>
-            <span>Dont Have an account?</span>
+            <span>Don't have an account?</span>
             <Link to='/sign-up' className='text-blue-500'>
               Sign Up
             </Link>
@@ -111,4 +129,6 @@ export default function SignIn() {
       </div>
     </div>
   );
-}
+};
+
+export default SignIn;
